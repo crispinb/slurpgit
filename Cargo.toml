@@ -6,4 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-github = "0.1.2"
+octocrab = "0.21.0"
+serde = { version = "1.0.162", features = ["serde_derive"] }
+serde_json = "1.0.96"
+tokio = {version="1.28.0", features=["full"]}
+url = "2.3.1"
