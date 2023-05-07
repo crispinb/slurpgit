@@ -10,13 +10,13 @@ type SlurpError = Box<dyn Error + Send + Sync + 'static>;
 type Result<T> = std::result::Result<T, SlurpError>;
 
 #[derive(Debug, Serialize)]
-enum RepoType {
+pub enum RepoType {
     Source,
     Fork,
 }
 
 #[derive(Debug, Serialize)]
-struct UserRepo {
+pub struct UserRepo {
     id: u64,
     url: Url,
     name: String,
@@ -63,7 +63,7 @@ impl Display for UserRepo {
     }
 }
 
-async fn repositories() -> Result<Vec<UserRepo>> {
+pub async fn repositories() -> Result<Vec<UserRepo>> {
     let token = std::env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN env var required");
     let client = Octocrab::builder().personal_token(token).build()?;
     let repos = client
