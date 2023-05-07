@@ -9,6 +9,8 @@ RUN --mount=type=cache,target=/usr/local/cargo,from=rust:latest,source=/usr/loca
 
 # Runtime image
 FROM debian:bullseye-slim
+RUN apt-get install -y --no-install-recommends ca-certificates
+RUN update-ca-certificates
 
 # Run as "app" user
 RUN useradd -ms /bin/bash app

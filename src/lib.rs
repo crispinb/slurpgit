@@ -4,6 +4,7 @@ use octocrab::{models::Repository, Octocrab};
 use serde::Serialize;
 use url::Url;
 
+// TODO: obfuscate private repo names & urls? Or require auth?
 // TODO: write very simple & literal list of fly.io deployment steps
 
 type SlurpError = Box<dyn Error + Send + Sync + 'static>;
