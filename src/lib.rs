@@ -5,7 +5,6 @@ use serde::Serialize;
 use url::Url;
 
 // TODO: obfuscate private repo names & urls? Or require auth?
-// TODO: write very simple & literal list of fly.io deployment steps
 
 type SlurpError = Box<dyn Error + Send + Sync + 'static>;
 type Result<T> = std::result::Result<T, SlurpError>;
@@ -16,31 +15,46 @@ pub enum RepoType {
     Fork,
 }
 
+impl Display for RepoType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s: String = match self {
+            RepoType::Source => "Source".into(),
+            RepoType::Fork => "Fork".into(),
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[derive(Debug, Serialize)]
 pub struct UserRepo {
     id: u64,
-    url: Url,
-    name: String,
-    repo_type: RepoType,
-    description: Option<String>,
-    private: bool,
+    pub url: Option<Url>,
+    // TODO: figure out better way
+    pub name: String,
+    pub repo_type: RepoType,
+    pub description: Option<String>,
+    pub private: bool,
     archived: bool,
 }
 
 // NB: Octo is an opaque type, hard to test.
 //     Could do a serde deser from a previously serialised, but seems overwrought
-// NB: Unwrapping some of the Option values for research - no idea why they would be
+// NB: `unwraps` on Repository values left here for research. I'm hoping they'll
+//      panic so I can find out why/when they're Options
 impl From<Repository> for UserRepo {
     fn from(value: Repository) -> Self {
         use RepoType::*;
 
         let id = value.id.0;
-        let url = value.html_url.unwrap();
-        let name = value.name;
         let description = value.description;
         let private = value.private.unwrap();
         let repo_type = if value.fork.unwrap() { Fork } else { Source };
         let archived = value.private.unwrap();
+        let (url, name) = if private {
+            (None, String::from("*****"))
+        } else {
+            (value.html_url, value.name)
+        };
 
         Self {
             id,
@@ -54,12 +68,29 @@ impl From<Repository> for UserRepo {
     }
 }
 
+impl UserRepo {
+    pub fn url(&self) -> String {
+        match &self.url {
+            Some(url) => url.to_string(),
+            None => "http://240.0.0.0".into(),
+        }
+    }
+
+    pub fn url_anchor(&self) -> String {
+        match &self.url {
+            Some(url) => format!(r#"<a href="{}">{} on Github</a>"#, url, self.name),
+            None => "[private repo]".into(),
+        }
+    }
+}
+
+
 impl Display for UserRepo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{} (private? {}), url: {}",
-            self.name, self.private, self.url
+            self.name, self.private, self.url()
         )
     }
 }
