@@ -6,7 +6,7 @@ use url::Url;
 
 // TODO: obfuscate private repo names & urls? Or require auth?
 
-const PRIVATE_REPO_PLACEHOLDER: String = "[private repo]".into();
+const PRIVATE_REPO_PLACEHOLDER: &str = "[private repo]";
 type SlurpError = Box<dyn Error + Send + Sync + 'static>;
 type Result<T> = std::result::Result<T, SlurpError>;
 
@@ -52,7 +52,7 @@ impl From<Repository> for UserRepo {
         let repo_type = if value.fork.unwrap() { Fork } else { Source };
         let archived = value.private.unwrap();
         let (url, name) = if private {
-            (None, PRIVATE_REPO_PLACEHOLDER)
+            (None, PRIVATE_REPO_PLACEHOLDER.into())
         } else {
             (value.html_url, value.name)
         };
@@ -80,7 +80,7 @@ impl UserRepo {
     pub fn url_anchor(&self) -> String {
         match &self.url {
             Some(url) => format!(r#"<a href="{}">{} on Github</a>"#, url, self.name),
-            None => PRIVATE_REPO_PLACEHOLDER,
+            None => PRIVATE_REPO_PLACEHOLDER.into(),
         }
     }
 }
@@ -104,7 +104,7 @@ pub async fn repositories() -> Result<Vec<UserRepo>> {
         .current()
         .list_repos_for_authenticated_user()
         .type_("owner")
-        .sort("updated")
+        .sort("pushed")
         .send()
         .await?;
 

@@ -26,7 +26,9 @@ async fn main() {
         "http://127.0.0.1:8000".parse().unwrap(),
         "http://49.186.114.143".parse().unwrap(),
         "http://crisbennett.com".parse().unwrap(),
+        "https://crisbennett.com".parse().unwrap(),
         "http://www.crisbennett.com".parse().unwrap(),
+        "https://www.crisbennett.com".parse().unwrap(),
     ];
     let cors = CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
