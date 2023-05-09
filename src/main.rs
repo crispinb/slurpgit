@@ -9,6 +9,7 @@ use tower_http::cors::CorsLayer;
 
 use slurpgit::repositories;
 
+//TODO: shut down properly
 #[tokio::main]
 async fn main() {
     // Q: how to get axum server to log startup etc?
@@ -63,7 +64,7 @@ async fn get_repos_html() -> impl IntoResponse {
     // TODO: Find a way to go from structs -> axum Bytes. or via tera templates
 
     let mut response = String::from(r#"<div class="repo-table-container">"#);
-    for heading in ["Name", "Description", "Type", "Github Url"] {
+    for heading in ["Name", "Description", "Language", "Type", "Github Url"] {
         response += r#"<div class="repo-table-header">"#;
         response += heading;
         response += "</div>";
@@ -78,6 +79,9 @@ async fn get_repos_html() -> impl IntoResponse {
         response += "</div>";
         response += r#"<div class="repo-table-item">"#;
         response += &repo.description.clone().unwrap_or(String::new());
+        response += "</div>";
+        response += r#"<div class="repo-table-item">"#;
+        response += &repo.language.clone().unwrap_or("?".into());
         response += "</div>";
         response += r#"<div class="repo-table-item">"#;
         response += &repo.repo_type.to_string();

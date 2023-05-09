@@ -4,8 +4,6 @@ use octocrab::{models::Repository, Octocrab};
 use serde::Serialize;
 use url::Url;
 
-// TODO: obfuscate private repo names & urls? Or require auth?
-
 const PRIVATE_REPO_PLACEHOLDER: &str = "[private repo]";
 type SlurpError = Box<dyn Error + Send + Sync + 'static>;
 type Result<T> = std::result::Result<T, SlurpError>;
@@ -30,9 +28,9 @@ impl Display for RepoType {
 pub struct UserRepo {
     id: u64,
     pub url: Option<Url>,
-    // TODO: figure out better way
     pub name: String,
     pub repo_type: RepoType,
+    pub language: Option<String>,
     pub description: Option<String>,
     pub private: bool,
     archived: bool,
@@ -45,10 +43,15 @@ pub struct UserRepo {
 impl From<Repository> for UserRepo {
     fn from(value: Repository) -> Self {
         use RepoType::*;
-
         let id = value.id.0;
         let description = value.description;
         let private = value.private.unwrap();
+        let language: Option<String> = if let Some(value) = value.language {
+            Some(value.as_str().unwrap().to_string())
+        } else {
+            None
+        };
+
         let repo_type = if value.fork.unwrap() { Fork } else { Source };
         let archived = value.private.unwrap();
         let (url, name) = if private {
@@ -62,6 +65,7 @@ impl From<Repository> for UserRepo {
             url,
             name,
             repo_type,
+            language,
             description,
             private,
             archived,
