@@ -6,6 +6,7 @@ use url::Url;
 
 // TODO: obfuscate private repo names & urls? Or require auth?
 
+const PRIVATE_REPO_PLACEHOLDER: String = "[private repo]".into();
 type SlurpError = Box<dyn Error + Send + Sync + 'static>;
 type Result<T> = std::result::Result<T, SlurpError>;
 
@@ -51,7 +52,7 @@ impl From<Repository> for UserRepo {
         let repo_type = if value.fork.unwrap() { Fork } else { Source };
         let archived = value.private.unwrap();
         let (url, name) = if private {
-            (None, String::from("*****"))
+            (None, PRIVATE_REPO_PLACEHOLDER)
         } else {
             (value.html_url, value.name)
         };
@@ -79,18 +80,19 @@ impl UserRepo {
     pub fn url_anchor(&self) -> String {
         match &self.url {
             Some(url) => format!(r#"<a href="{}">{} on Github</a>"#, url, self.name),
-            None => "[private repo]".into(),
+            None => PRIVATE_REPO_PLACEHOLDER,
         }
     }
 }
-
 
 impl Display for UserRepo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
             "{} (private? {}), url: {}",
-            self.name, self.private, self.url()
+            self.name,
+            self.private,
+            self.url()
         )
     }
 }
